@@ -1,0 +1,14 @@
+{
+	"ignore": [
+		"README.md",
+		".gitignore",
+		".DS_Store"
+	],
+	"hooks": {
+		"post-unpack": "npm install"
+	},
+	"commands": {
+		"Compile": "truffle compile",
+		"Migrate": "truffle migrate"
+	}
+}

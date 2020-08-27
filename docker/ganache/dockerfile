@@ -1,0 +1,52 @@
+FROM centos:7.2.1511
+
+USER root
+
+WORKDIR /home
+
+# 修改yum源
+RUN yum install -y wget \
+ && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
+ && wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo \
+ && wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo \
+ && yum clean all \
+ && yum makecache
+
+# 安装nodejs环境包括node-gyp的依赖的gcc和g++等
+RUN wget https://npm.taobao.org/mirrors/node/latest-v10.x/node-v10.22.0-linux-x64.tar.gz \
+ && tar -xf node-v10.22.0-linux-x64.tar.gz \
+ && rm -f node-v10.22.0-linux-x64.tar.gz \
+ && yum install -y gcc-c++ automake autoconf libtool make
+
+# 设置环境变量
+ENV PATH /home/node-v10.22.0-linux-x64/bin:$PATH
+
+# 安装 ganache, node-gyp
+RUN npm install --unsafe-perm=true --allow-root -g node-gyp ganache-cli --registry=http://registry.npm.taobao.org
+
+EXPOSE 8545
+
+# 启动ganache-cli
+CMD ganache-cli \
+-p 8545 \
+-h 0.0.0.0 \
+-i 8545 \
+--gasLimit=8000000 \
+--callGasLimit=8000000 \
+--account=0x9a28e3c832827b79e856b1868289ad99dbdab3f8cf4e7e9d1932069afe9e0fd3,10000000000000000000000000 \
+--account=0xcfa14af5efed674e70b773f9365f4e9ce782bada80fded7ef210f6236c5897d9,10000000000000000000000000 \
+--account=0xa2f267bc2f0e8ee74084a2e3b471cc95f85c5282d79e8279f8cb5ee61353ba2b,10000000000000000000000000 \
+--account=0x80abf11467743ba92b48048fc82ffc938de861c42a5d56eca16ecd213ab01900,10000000000000000000000000 \
+--account=0x4b45f01558c94c78343aa9f43ffe2bc2f3e8862ab45dfaddaa2e9ff657a5071a,10000000000000000000000000 \
+--account=0x4bd8037083760474e0be92391cd5199d317c45e9ef6ef6999c824dab85bee61e,10000000000000000000000000 \
+--account=0xe7eb82cf2d18c193b9da8756b9e798f7606f55d25eec8c3b511f9e968d01880d,10000000000000000000000000 \
+--account=0x7b4bc7e4a5cd54ebbc0b899e09f9fe37f48c5a7e7e3434b1e55cdc6507148864,10000000000000000000000000 \
+--account=0xc0826a3dd4c512beca30b6fc9ca31bb2f05dfd2c1d9e480da90dba57abd69500,10000000000000000000000000 \
+--account=0x3b354ad233208b69d640dff05b78cf8bd6bed489ec3ea1ea813f609cadcff036,10000000000000000000000000 \
+--account=0x86d6d9dabd953016d3a5444e209c58f19b0ddf3ab5e140494d991458ce4fa6f2,10000000000000000000000000 \
+--account=0x5d8e7f3b60419e270fcd104b269dfe96c6f25c7ecf521dddf3bba4c782ca01b7,10000000000000000000000000 \
+--account=0x644209e963b0ed98d49058c176a632fc739cb94349d2b8fb179227b85a6b29e4,10000000000000000000000000 \
+--account=0xb684ffe52a5372f71c203ecda6509d632f2a8f739d49786ed07449bf99f8b5f1,10000000000000000000000000 \
+--account=0xb33869f092cd18bb524a207c5afd39a5a5bc1187d95a484227b9eacdfb1a9f21,10000000000000000000000000
+
+# docker run -it --privileged=true truffle_env:latest "/sbin/init"
