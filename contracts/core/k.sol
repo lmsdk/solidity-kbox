@@ -190,8 +190,14 @@ contract KStoragePayable is KPausable {
     function () external payable {
         address impl_address = KImplementAddress;
         assembly {
+
+            /// 若没有附带data信息，说明很可能能是直接对该合约进行ether转账
+            if eq(calldatasize(), 0) {
+                return(0, 0)
+            }
+
             calldatacopy(0x0, 0x0, calldatasize())
-            let success := delegatecall(sub(gas(), 10000), impl_address, 0x0, calldatasize(), 0, 0)
+            let success := delegatecall(gas(), impl_address, 0x0, calldatasize(), 0, 0)
             let retSz := returndatasize()
             returndatacopy(0, 0, retSz)
             switch success

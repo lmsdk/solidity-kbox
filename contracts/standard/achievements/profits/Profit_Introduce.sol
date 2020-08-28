@@ -14,16 +14,9 @@ contract Profit_IntroduceStorage is KStorage {
 
     /// @dev 定义每个层级获得的奖励比例
     uint[] public proportions = [
-        0.2 szabo,
-        0.15 szabo,
-        0.1 szabo,
-        0.1 szabo,
-        0.1 szabo,
-        0.1 szabo,
-        0.1 szabo,
-        0.1 szabo,
-        0.1 szabo,
-        0.1 szabo
+        0.30 szabo, 0.20 szabo, 0.10 szabo, 0.05 szabo, 0.05 szabo,
+        0.05 szabo, 0.05 szabo, 0.05 szabo, 0.05 szabo, 0.05 szabo,
+        0.05 szabo, 0.05 szabo, 0.05 szabo, 0.10 szabo, 0.20 szabo
     ];
 
     uint public allProfitVaildCount = 6;
@@ -45,7 +38,7 @@ contract Profit_IntroduceStorage is KStorage {
     }
 }
 
-contract Profit_Introduce is iProfit, Profit_IntroduceStorage {
+contract Profit_Introduce is iProfit, Profit_IntroduceStorage(iRelations(0x0), Achievement_ValidAddress(0x0), new uint[](0)) {
 
     /*
     * @dev 获取计算周期

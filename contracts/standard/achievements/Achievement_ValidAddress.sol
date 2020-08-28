@@ -20,9 +20,10 @@ contract Achievement_ValidAddressStorage is KStorage{
     struct AchievementInfo {
         /// 直接推荐
         uint direct;
-
         /// 间接推荐
         uint indirect;
+        /// 自身有效
+        bool isvaild;
     }
 
     /**
@@ -44,6 +45,13 @@ contract Achievement_ValidAddress is iAchievement,Achievement_ValidAddressStorag
     using SafeMath for uint;
 
     function increaseDelegate(address recipient, uint addedValue) external KDelegateMethod returns (bool) {
+
+        /// 不允许重复添加
+        if ( achievementInfoMapping[recipient].isvaild ) {
+            return true;
+        }
+
+        achievementInfoMapping[recipient].isvaild = true;
 
         achievementInfoMapping[recipient].direct = achievementInfoMapping[recipient].direct.add(addedValue);
 
