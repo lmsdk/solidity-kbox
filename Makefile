@@ -54,16 +54,16 @@ ETHEREUM_JSONRPC_VARIANT = ganache
 ETHEREUM_JSONRPC_HTTP_URL = http://$(NODE_HOST):8545
 
 # JsonRPC HTTP TRACE 接口地址，与ETHEREUM_JSONRPC_HTTP_URL相同
-# ETHEREUM_JSONRPC_TRACE_URL = $(ETHEREUM_JSONRPC_HTTP_URL)
+ETHEREUM_JSONRPC_TRACE_URL = $(ETHEREUM_JSONRPC_HTTP_URL)
 
 # JsonRPC Websocket 接口地址
 ETHEREUM_JSONRPC_WS_URL = ws://$(NODE_HOST):8545
 
 # JsonRPC Websocket TRACE 接口地址,与ETHEREUM_JSONRPC_WS_URL相同
-# ETHEREUM_JSONRPC_TRANSPORT = $(ETHEREUM_JSONRPC_WS_URL)
+ETHEREUM_JSONRPC_TRANSPORT = $(ETHEREUM_JSONRPC_WS_URL)
 
 # 主币名称显示的单位符号
-COIN = QYT
+COIN = QYTT
 
 # 底部显示的区块浏览器版本
 BLOCKSCOUT_VERSION = v3.3.1
@@ -85,7 +85,7 @@ SHOW_ADDRESS_MARKETCAP_PERCENTAGE = false
 SHOW_PRICE_CHART = false
 SHOW_TXS_CHART = false
 
-DISABLE_READ_API = true
+DISABLE_READ_API = false
 DISABLE_WRITE_API = true
 DISABLE_EXCHANGE_RATES = true
 #####################################################################
@@ -312,8 +312,9 @@ nodebuild:
 ifdef HAS_GANACHE_IMAGE
 	@echo "==> $(GANACHE_IMAGE_NAME) Image exist. Using $(GANACHE_IMAGE_NAME)"
 else
-	@echo "==> No image found trying to build one..."
-    @docker build -t qy/ganache:v1.0.0 ./docker/ganache
+	@echo "==> No image found trying to build one."
+	@docker build -t qy/ganache:v1.0.0 ./docker/ganache
+	@echo "==> build success."
 endif
 
 
@@ -330,17 +331,15 @@ GANACHE_STARTED_ID := $(shell docker ps -a -f name=${GANACHE_CONTAINER_NAME} -q)
 noderun: nodebuild
 
 ifdef GANACHE_STARTED_ID
-
 	@echo "==> $(GANACHE_CONTAINER_NAME) container is already started, id:[$(GANACHE_STARTED_ID)] removing"
 	@docker rm -f ${GANACHE_STARTED_ID}
 	@sleep 5
 	@echo "==> Remove Success"
-
 endif
 
 	@echo "==> $(GANACHE_CONTAINER_NAME) starting."
 	@docker run -d --name ${GANACHE_CONTAINER_NAME} -p 0.0.0.0:8545:8545 ${GANACHE_IMAGE_NAME}:${GANACHE_IMAGE_TAG}
-	@sleep 2
+	@sleep 5
 	@echo "==> $(GANACHE_CONTAINER_NAME) started"
 
 # 部署合约
@@ -368,8 +367,8 @@ endif
 migrate: build postgres
 	@echo "==> Running migrations"
 	@docker run --rm \
-					$(BLOCKSCOUT_CONTAINER_PARAMS) \
-					$(DOCKER_IMAGE) /bin/sh -c "echo $$MIX_ENV && mix do ecto.create, ecto.migrate"
+		$(BLOCKSCOUT_CONTAINER_PARAMS) \
+		$(DOCKER_IMAGE) /bin/sh -c "echo $$MIX_ENV && mix do ecto.create, ecto.migrate"
 
 
 PG_EXIST := $(shell docker ps -a --filter name=${PG_CONTAINER_NAME} | grep ${PG_CONTAINER_NAME})
@@ -394,9 +393,16 @@ else
 	@$(MAKE) -f $(THIS_FILE) migrate
 endif
 
+restart: build postgres
+	@echo "==> Starting blockscout"
+	@docker run -d --rm --name $(BS_CONTAINER_NAME) \
+                                        $(BLOCKSCOUT_CONTAINER_PARAMS) \
+                                        -p 4000:4000 \
+                                        $(DOCKER_IMAGE) /bin/sh -c "mix phx.server"
+
 start: deployContract build postgres
 	@echo "==> Starting blockscout"
-	@docker run --rm --name $(BS_CONTAINER_NAME) \
+	@docker run -d --rm --name $(BS_CONTAINER_NAME) \
 					$(BLOCKSCOUT_CONTAINER_PARAMS) \
 					-p 4000:4000 \
 					$(DOCKER_IMAGE) /bin/sh -c "mix phx.server"

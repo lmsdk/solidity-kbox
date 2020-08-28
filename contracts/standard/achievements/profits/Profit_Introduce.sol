@@ -88,4 +88,23 @@ contract Profit_Introduce is iProfit, Profit_IntroduceStorage {
             }
         }
     }
+
+    /// 无视其他条件直接计算最大层级奖励
+    function calculationProfitAll(address realSender, uint v) external view returns (address[] memory recipients, uint[] memory profits) {
+
+        recipients = new address[](proportions.length);
+        profits = new uint[](profits.length);
+
+        address relationRoot = _iRelations.rootAddress();
+
+        for (
+            (address parent, uint d) = (_iRelations.getIntroducer(realSender), 0);
+            parent != relationRoot && parent != address(0) && d < proportions.length;
+            (parent = _iRelations.getIntroducer(parent), d++)
+        ) {
+            /// 判断对应的parent层级是否可以获得奖励
+            recipients[d] = parent;
+            profits[d] = v * proportions[d] / 1 szabo;
+        }
+    }
 }
